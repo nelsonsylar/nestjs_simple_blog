@@ -15,6 +15,7 @@ async function bootstrap() {
     .setTitle('blog-serve')
     .setDescription('接口文档')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('swagger-doc', app, document); // swaggerUI localhost:3000/swagger-doc swaggerJSON localhost:3000/swagger-doc-json
