@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ArticleCreateDTO } from './dto/article-create.dto';
 import { ArticleEditDTO } from './dto/article-edit.dto';
 import { IdDTO } from './dto/id.dto';
@@ -6,16 +6,13 @@ import { ListDTO } from './dto/list.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Article } from './entity/article.entity';
-
+import { getPagination } from '../../utils';
 @Injectable()
 export class ArticleService {
-  list: any[];
   constructor(
     @InjectRepository(Article)
     private readonly articleRepository: Repository<Article>,
-  ) {
-    this.list = [];
-  }
+  ) {}
 
   async getMore(listDTO: ListDTO) {
     const { page = 1, pageSize = 10 } = listDTO;
@@ -32,27 +29,44 @@ export class ArticleService {
       ])
       .skip((page - 1) * pageSize)
       .take(pageSize)
-      .getMany();
+      .getManyAndCount();
 
-    const list = await getList;
-    return list;
+    const [list, total] = await getList;
+    const pagination = getPagination(total, pageSize, page);
+    return {
+      list,
+      pagination,
+    };
   }
 
-  async getOne(idDto: IdDTO): Promise<Article> {
+  async getOne(idDto: IdDTO) {
     const { id } = idDto;
     const articleDetail = await this.articleRepository.findOne({
       where: { id },
     });
-    return articleDetail;
+    if (!articleDetail) {
+      throw new NotFoundException('找不到文章'); // 主动包装一层并返回
+      //{
+      // "statusCode": 404,
+      // "message": "找不到文章",
+      // "error": "Not Found"
+      // }
+    }
+    const result = {
+      info: articleDetail,
+    };
+    return result;
   }
 
-  async create(articleCreateDTO: ArticleCreateDTO): Promise<Article> {
+  async create(articleCreateDTO: ArticleCreateDTO): Promise<any> {
     const article = new Article();
     article.title = articleCreateDTO.title;
     article.description = articleCreateDTO.description;
     article.content = articleCreateDTO.content;
     const result = await this.articleRepository.save(article);
-    return result;
+    return {
+      info: result,
+    };
   }
 
   async update(articleEditDTO: ArticleEditDTO) {
@@ -64,7 +78,9 @@ export class ArticleService {
     articleToUpdate.description = articleEditDTO.description;
     articleToUpdate.content = articleEditDTO.content;
     const result = await this.articleRepository.save(articleToUpdate);
-    return result;
+    return {
+      info: result,
+    };
   }
 
   async delete(idDTO: IdDTO) {
@@ -74,6 +90,8 @@ export class ArticleService {
     });
     articleToUpdate.isDelete = true;
     const result = await this.articleRepository.save(articleToUpdate);
-    return result;
+    return {
+      info: result,
+    };
   }
 }
