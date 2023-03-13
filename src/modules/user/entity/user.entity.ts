@@ -1,34 +1,15 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-  VersionColumn,
-} from 'typeorm';
+// src/modules/user/entity/user.entity.ts
+
+import { Common } from 'src/common/entity/common.entity';
+import { Entity, Column } from 'typeorm';
 
 @Entity()
-export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @CreateDateColumn()
-  createTime: Date;
-
-  @UpdateDateColumn()
-  updateTime: Date;
-
-  @Column({
-    default: false,
-  })
-  isDelete: boolean;
-
-  @VersionColumn()
-  version: number;
-
+export class User extends Common {
+  // 昵称
   @Column('text')
   nickname: string;
 
+  // 手机号
   @Column('text')
   mobile: string;
 
