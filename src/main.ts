@@ -8,7 +8,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalInterceptors(new TransformInterceptor()); // 全局使用拦截器
-  app.useGlobalFilters(new HttpExecptionFilter()); // 全局使用筛选器
+  // app.useGlobalFilters(new HttpExecptionFilter()); // 全局使用筛选器
   app.useGlobalPipes(new ValidationPipe());
 
   const options = new DocumentBuilder()
